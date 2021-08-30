@@ -1,0 +1,2 @@
+# majiangGame
+ da ma jiang
