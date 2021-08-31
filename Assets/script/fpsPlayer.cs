@@ -4,18 +4,20 @@ using UnityEngine;
 
 public class fpsPlayer : MonoBehaviour
 {
-    public int health = 100;
+    public int health = 20;
     public float fireCD = 0.2f;
     public float speed = 5;
-    public float mouse_sensityvity = 10.0f;
+    public float mouseSensityvity = 10.0f;
     public float jumpHeight = 2.0f;
     public float backfireIntensity = 0.2f;
     public Transform firePoint;
     public GameObject myCam;
     public GameObject myBullet;
+    public generator gameManager;
+    public Rigidbody rb;
+    public bool shakeGo = false;
 
     // PRIVATE FIELD
-    Rigidbody rb;
     float fireCounter = 0;
     float jumpCounter = 0;
     float rotLimit = 0;
@@ -31,6 +33,17 @@ public class fpsPlayer : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        if (health <= 0)
+        {
+            while (gameManager.scoreCount < 13) gameManager.addScore(35);
+        }
+        if (gameManager.scoreCount >= 13) return;
+        // shake
+        if (shakeGo)
+        {
+            StartCoroutine(camShake(1.0F, 0.02F, 0.3F));
+            shakeGo = false;
+        }
         // 计算时间
         fireCounter -= Time.deltaTime;
         jumpCounter -= Time.deltaTime * 9.8f;
@@ -46,9 +59,18 @@ public class fpsPlayer : MonoBehaviour
         if (Input.GetButton("Fire1"))
         {
             fireOffset += Time.deltaTime * backfireIntensity;
-            speedMultiplier = 0.6f;
+            speedMultiplier = 0.35f;
+            myCam.transform.localPosition = new Vector3(
+                Random.Range(-fireOffset, fireOffset),
+                Random.Range(-fireOffset, fireOffset),
+                Random.Range(-fireOffset, fireOffset)
+                ) * 0.01F;
         }
-        else fireOffset = 0;
+        else
+        {
+            myCam.transform.localPosition = new Vector3(0, 0, 0);
+            fireOffset = 0;
+        }
         // 移动
         if (Input.GetKey(KeyCode.Space) && Mathf.Abs(rb.velocity.y) < 0.1f)
             jumpCounter = jumpHeight;
@@ -63,12 +85,12 @@ public class fpsPlayer : MonoBehaviour
         rb.MovePosition(transform.position + jumpVec +
             (this.transform.rotation * moveVec).normalized * speed * Time.deltaTime * speedMultiplier);
         // 旋转
-        this.transform.Rotate(0, Input.GetAxis("Mouse X") * mouse_sensityvity, 0);
-        rotLimit += -Input.GetAxis("Mouse Y") * mouse_sensityvity;
-        if (rotLimit > -30 && rotLimit < 30)
-            myCam.transform.Rotate(-Input.GetAxis("Mouse Y") * mouse_sensityvity, 0, 0);
+        this.transform.Rotate(0, Input.GetAxis("Mouse X") * mouseSensityvity, 0);
+        rotLimit += -Input.GetAxis("Mouse Y") * mouseSensityvity;
+        if (rotLimit > -60 && rotLimit < 60)
+            myCam.transform.Rotate(-Input.GetAxis("Mouse Y") * mouseSensityvity, 0, 0);
         else
-            rotLimit -= -Input.GetAxis("Mouse Y") * mouse_sensityvity;
+            rotLimit -= -Input.GetAxis("Mouse Y") * mouseSensityvity;
     }
 
     void fire()
@@ -80,5 +102,20 @@ public class fpsPlayer : MonoBehaviour
             myCam.transform.eulerAngles.y + Random.Range(-fireOffset, fireOffset),
             myCam.transform.eulerAngles.z + Random.Range(-fireOffset, fireOffset)
             );
+    }
+
+    public IEnumerator camShake(float shakeForSec = 0.5f, float frequency = 0.02f, float offset = 0.1f)
+    {
+        while (shakeForSec >= 0)
+        {
+            myCam.transform.localPosition = new Vector3(
+                Random.Range(-offset, offset),
+                Random.Range(-offset, offset),
+                Random.Range(-offset, offset)
+                );
+            yield return new WaitForSecondsRealtime(frequency);
+            shakeForSec -= frequency;
+        }
+        myCam.transform.localPosition = new Vector3(0, 0, 0);
     }
 }

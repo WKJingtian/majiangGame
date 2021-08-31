@@ -60,13 +60,16 @@ MonoBehaviour:
   health: 100
   fireCD: 0.2
   speed: 3
-  mouse_sensityvity: 20
+  mouseSensityvity: 10
   jumpHeight: 15
   backfireIntensity: 0.2
   firePoint: {fileID: 1324446152411294659}
   myCam: {fileID: 5470298643516887825}
   myBullet: {fileID: 9181251592473866597, guid: 0261c75e4d3acd2488a637e2f23e3687,
     type: 3}
+  gameManager: {fileID: 0}
+  rb: {fileID: 0}
+  shakeGo: 0
 --- !u!54 &2233027835841620843
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -81,7 +84,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 1
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!33 &3626161697877582714
 MeshFilter:

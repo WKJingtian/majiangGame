@@ -6,11 +6,12 @@ public class bullet : MonoBehaviour
 {
     public float bulletSpeed = 15.0f;
     public int damage;
+    public GameObject hitEffect;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        Destroy(this.gameObject, 10.0f);
     }
 
     // Update is called once per frame
@@ -23,6 +24,10 @@ public class bullet : MonoBehaviour
     {
         if (other.gameObject.tag == "majiang")
         {
+            GameObject exp = Instantiate(hitEffect);
+            exp.transform.position = this.transform.position;
+            Destroy(exp, 0.2f);
+
             other.gameObject.GetComponent<majiang>().getHit(damage);
             Destroy(this.gameObject);
         }
@@ -30,6 +35,10 @@ public class bullet : MonoBehaviour
             other.gameObject.tag == "diban" ||
             other.gameObject.tag == "tianhuaban")
         {
+            GameObject exp = Instantiate(hitEffect);
+            exp.transform.position = this.transform.position;
+            Destroy(exp, 0.2f);
+
             Destroy(this.gameObject);
         }
     }
