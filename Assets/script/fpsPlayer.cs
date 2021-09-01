@@ -8,8 +8,11 @@ public class fpsPlayer : MonoBehaviour
     public float fireCD = 0.2f;
     public float speed = 5;
     public float mouseSensityvity = 10.0f;
-    public float jumpHeight = 2.0f;
     public float backfireIntensity = 0.2f;
+    public float walkAnimMag;
+    public float walkAnimSpeed;
+    public float jumpForce = 10.0f;
+    public AudioSource throat;
     public Transform firePoint;
     public GameObject myCam;
     public GameObject myBullet;
@@ -18,16 +21,18 @@ public class fpsPlayer : MonoBehaviour
     public bool shakeGo = false;
 
     // PRIVATE FIELD
-    float fireCounter = 0;
-    float jumpCounter = 0;
-    float rotLimit = 0;
-    float fireOffset = 0;
+    protected float fireCounter = 0;
+    protected float rotLimit = 0;
+    protected float fireOffset = 0;
+    protected int walkCamShakeSwitch = 0;
+    protected float walkAnimCounter;
 
     // Start is called before the first frame update
     void Start()
     {
         Cursor.visible = false;
         rb = this.gameObject.GetComponent<Rigidbody>();
+        throat = this.gameObject.GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -35,9 +40,9 @@ public class fpsPlayer : MonoBehaviour
     {
         if (health <= 0)
         {
-            while (gameManager.scoreCount < 13) gameManager.addScore(35);
+            while (gameManager && gameManager.scoreCount < 13) gameManager.addScore(35);
         }
-        if (gameManager.scoreCount >= 13) return;
+        if (gameManager && gameManager.scoreCount >= 13) return;
         // shake
         if (shakeGo)
         {
@@ -45,45 +50,71 @@ public class fpsPlayer : MonoBehaviour
             shakeGo = false;
         }
         // 计算时间
-        fireCounter -= Time.deltaTime;
-        jumpCounter -= Time.deltaTime * 9.8f;
+        fireCounter -= Time.deltaTime * (1 + fireOffset * 0.1f);
         // 计算开火
         float speedMultiplier = 1.0f;
-        if (jumpCounter < 0) jumpCounter = 0;
         if (Input.GetButton("Fire1") && fireCounter <= 0)
         {
             fire();
             fireCounter = fireCD;
         }
+        // 移动
+        if (Input.GetButton("Fire1")) speedMultiplier = 0.35f;
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, 3, ~(1 << 8))
+            && Input.GetKeyDown(KeyCode.Space))
+            rb.AddForce(new Vector3(0, jumpForce, 0), ForceMode.Impulse);
+        Vector3 moveVec = new Vector3(
+            Input.GetAxisRaw("Horizontal"),
+            0,
+            Input.GetAxisRaw("Vertical"));
+        rb.MovePosition(transform.position +
+            (this.transform.rotation * moveVec).normalized * speed * Time.deltaTime * speedMultiplier);
         // 后坐力
         if (Input.GetButton("Fire1"))
         {
             fireOffset += Time.deltaTime * backfireIntensity;
-            speedMultiplier = 0.35f;
             myCam.transform.localPosition = new Vector3(
                 Random.Range(-fireOffset, fireOffset),
                 Random.Range(-fireOffset, fireOffset),
                 Random.Range(-fireOffset, fireOffset)
                 ) * 0.01F;
         }
+        else if (moveVec.sqrMagnitude > 0.1f)
+        {
+            //throat.PlayOneShot(Resources.Load<AudioClip>("step2"));
+            if (walkCamShakeSwitch == 0)
+            {
+                myCam.transform.localPosition += new Vector3(+walkAnimSpeed, -walkAnimSpeed, 0)
+                    * Time.deltaTime;
+            }
+            else if (walkCamShakeSwitch == 1)
+            {
+                myCam.transform.localPosition += new Vector3(-walkAnimSpeed, +walkAnimSpeed, 0)
+                    * Time.deltaTime;
+            }
+            else if (walkCamShakeSwitch == 2)
+            {
+                myCam.transform.localPosition += new Vector3(-walkAnimSpeed, -walkAnimSpeed, 0)
+                    * Time.deltaTime;
+            }
+            else
+            {
+                myCam.transform.localPosition += new Vector3(+walkAnimSpeed, +walkAnimSpeed, 0)
+                    * Time.deltaTime;
+            }
+            walkAnimCounter += walkAnimSpeed * Time.deltaTime;
+            if (walkAnimCounter >= walkAnimMag)
+            {
+                walkAnimCounter = 0;
+                walkCamShakeSwitch = (1 + walkCamShakeSwitch) % 4;
+            }
+        }
         else
         {
             myCam.transform.localPosition = new Vector3(0, 0, 0);
             fireOffset = 0;
         }
-        // 移动
-        if (Input.GetKey(KeyCode.Space) && Mathf.Abs(rb.velocity.y) < 0.1f)
-            jumpCounter = jumpHeight;
-        Vector3 moveVec = new Vector3(
-            Input.GetAxisRaw("Horizontal"),
-            0,
-            Input.GetAxisRaw("Vertical"));
-        Vector3 jumpVec = new Vector3(
-            0,
-            jumpCounter,
-            0);
-        rb.MovePosition(transform.position + jumpVec +
-            (this.transform.rotation * moveVec).normalized * speed * Time.deltaTime * speedMultiplier);
         // 旋转
         this.transform.Rotate(0, Input.GetAxis("Mouse X") * mouseSensityvity, 0);
         rotLimit += -Input.GetAxis("Mouse Y") * mouseSensityvity;

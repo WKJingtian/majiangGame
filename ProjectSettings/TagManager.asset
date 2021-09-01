@@ -4,7 +4,9 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Shootable
+  - diban
+  - majiang
+  - kongqiqiang
   layers:
   - Default
   - TransparentFX
@@ -14,12 +16,12 @@ TagManager:
   - UI
   - 
   - 
-  - Lighting
-  - Ground
-  - Postprocessing
-  - 
-  - 
-  - 
+  - PostProcessing
+  - Weapon
+  - Target
+  - Projectile
+  - Player
+  - PlayerCollisionOnly
   - 
   - 
   - 
@@ -39,9 +41,6 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: Fire
-    uniqueID: 3804908061
-    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0

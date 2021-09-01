@@ -21,10 +21,10 @@ public class majiang : MonoBehaviour
     public float animMag;
     public float animSpeed;
 
-    float animCounter;
-    bool animSwitch = true;
-    float jumpCDcounter;
-    AudioSource throat;
+    protected float animCounter;
+    protected bool animSwitch = true;
+    protected float jumpCDcounter;
+    protected AudioSource throat;
     // Start is called before the first frame update
     void Start()
     {
@@ -51,8 +51,9 @@ public class majiang : MonoBehaviour
         {
             this.transform.Rotate(0, Random.Range(-90.0f, 90.0f), 0);
             jumpCDcounter = jumpCD;
-            rb.AddForce(this.transform.rotation * new Vector3(jumpLeapSpeed, 0, 0)
-                + new Vector3(0, jumpHeight, 0),
+            //throat.PlayOneShot(Resources.Load<AudioClip>("bounce"));
+            rb.AddForce(this.transform.rotation * new Vector3(jumpLeapSpeed, 0, 0) * Random.Range(0.5f, 1.5f)
+                + new Vector3(0, jumpHeight, 0) * Random.Range(0.5f, 1.5f),
                 ForceMode.Impulse);
         }
         if (animSwitch)
@@ -122,7 +123,7 @@ public class majiang : MonoBehaviour
             return;
         }
         if (typeID == 34) typeID = (int)Random.Range(0, 33.90f);
-        gameManager.addScore(typeID);
+        if(gameManager) gameManager.addScore(typeID);
         GameObject deathClout = Instantiate(deathParticle);
         deathClout.transform.position = this.transform.position;
         Destroy(deathClout, 3.0f);
@@ -134,14 +135,13 @@ public class majiang : MonoBehaviour
         GameObject exp = Instantiate(explosionParticle);
         exp.transform.position = this.transform.position;
         Destroy(exp, 1.2f);
-        gameManager.isExploding = true;
+        if (gameManager) gameManager.isExploding = true;
 
         foreach (majiang mj in GameObject.FindObjectsOfType<majiang>())
         {
             if (Vector3.Distance(this.transform.position, mj.transform.position) < explodeRad)
             {
-                float multiplier = 1 -
-                    (explodeRad - Vector3.Distance(this.transform.position, mj.transform.position))
+                float multiplier = (explodeRad - Vector3.Distance(this.transform.position, mj.transform.position))
                     / explodeRad;
                 mj.health -= (int)(multiplier * explodeDmg);
                 mj.rb.AddForce(
@@ -156,8 +156,7 @@ public class majiang : MonoBehaviour
             player.shakeGo = true;
             if (Vector3.Distance(this.transform.position, player.transform.position) < explodeRad)
             {
-                float multiplier = 1 -
-                    (explodeRad - Vector3.Distance(this.transform.position, player.transform.position))
+                float multiplier = (explodeRad - Vector3.Distance(this.transform.position, player.transform.position))
                     / explodeRad;
                 player.health -= (int)(multiplier * explodeDmg) * 3;
                 player.rb.AddForce(
