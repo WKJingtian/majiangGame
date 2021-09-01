@@ -22,7 +22,7 @@ public class fpsPlayer : MonoBehaviour
 
     // PRIVATE FIELD
     protected float fireCounter = 0;
-    protected float rotLimit = 0;
+    public float rotLimit = 0;
     protected float fireOffset = 0;
     protected int walkCamShakeSwitch = 0;
     protected float walkAnimCounter;
